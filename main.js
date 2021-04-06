@@ -25,45 +25,25 @@ var app = http.createServer(function(request,response){
               response.end(html);
           });
       } else { //상세보기
-          /*
-        fs.readdir('./data', function(error, filelist){
-          var filteredId = path.parse(queryData.id).base;
-          fs.readFile(`data/${filteredId}`, 'utf8', function(err, description){
-            var title = queryData.id;
-            var sanitizedTitle = sanitizeHtml(title);
-            var sanitizedDescription = sanitizeHtml(description, {
-              allowedTags:['h1']
-            });
-            var list = template.list(filelist);
-            var html = template.HTML(sanitizedTitle, list,
-              `<h2>${sanitizedTitle}</h2>${sanitizedDescription}`,
-              ` <a href="/create">create</a>
-                <a href="/update?id=${sanitizedTitle}">update</a>
-                <form action="delete_process" method="post">
-                  <input type="hidden" name="id" value="${sanitizedTitle}">
-                  <input type="submit" value="delete">
-                </form>`
-            );
-            response.writeHead(200);
-            response.end(html);
-          });
-        });
-        */
           db.query(`SELECT * FROM topic`, function (error, topics) {
               if (error){
                   throw error;
               }
-              db.query(`SELECT * FROM topic WHERE id = ${queryData.id}`, function (error2, topic) {
+              db.query(`SELECT * FROM topic WHERE id = ?`, [queryData.id], function (error2, topic) { //queryData.id의 값이 ?를 통해 치환되어 자동으로 들어감. 이는 공격 의도가 있는 코드를 세탁해주는 일을 해준다. [이렇게 사용하기!]
                   if (error2){
                       throw error2;
                   }
-                  console.log(topic[0].title); //topic 데이터는 배열에 담겨 들어오므로, 배열로 취급해줘야함 = [0]으로
                   var title = topic[0].title;
                   var description = topic[0].description;
                   var list = template.list(topics); // lib/template.js의 list
                   var html = template.HTML(title, list, // lib/template.js의 html
                       `<h2>${title}</h2>${description}`,
-                      `<a href="/create">create</a>`
+                      ` <a href="/create">create</a>
+                <a href="/update?id=${queryData.id}">update</a>
+                <form action="delete_process" method="post">
+                  <input type="hidden" name="id" value="${queryData.id}">
+                  <input type="submit" value="delete">
+                </form>`
                   );
                   response.writeHead(200);
                   response.end(html);
