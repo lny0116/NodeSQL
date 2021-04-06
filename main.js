@@ -5,6 +5,7 @@ var qs = require('querystring');
 var template = require('./lib/template.js');
 var path = require('path');
 var sanitizeHtml = require('sanitize-html');
+var db = require('./lib/db.js'); //db 내용에 정보가 있기 때문에 파일을 분리하고 모듈을 import한 것
 
 var app = http.createServer(function(request,response){
     var _url = request.url;
@@ -12,17 +13,22 @@ var app = http.createServer(function(request,response){
     var pathname = url.parse(_url, true).pathname;
     if(pathname === '/'){
       if(queryData.id === undefined){
-        fs.readdir('./data', function(error, filelist){
-          var title = 'Welcome';
-          var description = 'Hello, Node.js';
-          var list = template.list(filelist);
-          var html = template.HTML(title, list,
-            `<h2>${title}</h2>${description}`,
-            `<a href="/create">create</a>`
-          );
-          response.writeHead(200);
-          response.end(html);
-        });
+        // fs.readdir('./data', function(error, filelist){
+        //   var title = 'Welcome';
+        //   var description = 'Hello, Node.js';
+        //   var list = template.list(filelist);
+        //   var html = template.HTML(title, list,
+        //     `<h2>${title}</h2>${description}`,
+        //     `<a href="/create">create</a>`
+        //   );
+        //   response.writeHead(200);
+        //   response.end(html);
+        // });
+          db.query(`SELECT * FROM topic`, function (error, topics){
+              console.log(topics);
+                response.writeHead(200);
+                response.end('success');
+          });
       } else {
         fs.readdir('./data', function(error, filelist){
           var filteredId = path.parse(queryData.id).base;

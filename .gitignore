@@ -1,3 +1,4 @@
 .idea
 node_modules
 nodejs/mysql.js
+lib/db.js
