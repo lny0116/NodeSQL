@@ -13,10 +13,6 @@ var app = http.createServer(function(request,response){
     var pathname = url.parse(_url, true).pathname;
     if(pathname === '/'){
       if(queryData.id === undefined){
-        // fs.readdir('./data', function(error, filelist){
-        //   response.writeHead(200);
-        //   response.end(html);
-        // });
           db.query(`SELECT * FROM topic`, function (error, topics) {
               var title = 'Welcome';
               var description = 'Hello, Node.js';
@@ -28,7 +24,8 @@ var app = http.createServer(function(request,response){
               response.writeHead(200);
               response.end(html);
           });
-      } else {
+      } else { //상세보기
+          /*
         fs.readdir('./data', function(error, filelist){
           var filteredId = path.parse(queryData.id).base;
           fs.readFile(`data/${filteredId}`, 'utf8', function(err, description){
@@ -51,6 +48,27 @@ var app = http.createServer(function(request,response){
             response.end(html);
           });
         });
+        */
+          db.query(`SELECT * FROM topic`, function (error, topics) {
+              if (error){
+                  throw error;
+              }
+              db.query(`SELECT * FROM topic WHERE id = ${queryData.id}`, function (error2, topic) {
+                  if (error2){
+                      throw error2;
+                  }
+                  console.log(topic[0].title); //topic 데이터는 배열에 담겨 들어오므로, 배열로 취급해줘야함 = [0]으로
+                  var title = topic[0].title;
+                  var description = topic[0].description;
+                  var list = template.list(topics); // lib/template.js의 list
+                  var html = template.HTML(title, list, // lib/template.js의 html
+                      `<h2>${title}</h2>${description}`,
+                      `<a href="/create">create</a>`
+                  );
+                  response.writeHead(200);
+                  response.end(html);
+              })
+          });
       }
     } else if(pathname === '/create'){
       fs.readdir('./data', function(error, filelist){
