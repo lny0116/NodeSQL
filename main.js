@@ -14,20 +14,19 @@ var app = http.createServer(function(request,response){
     if(pathname === '/'){
       if(queryData.id === undefined){
         // fs.readdir('./data', function(error, filelist){
-        //   var title = 'Welcome';
-        //   var description = 'Hello, Node.js';
-        //   var list = template.list(filelist);
-        //   var html = template.HTML(title, list,
-        //     `<h2>${title}</h2>${description}`,
-        //     `<a href="/create">create</a>`
-        //   );
         //   response.writeHead(200);
         //   response.end(html);
         // });
-          db.query(`SELECT * FROM topic`, function (error, topics){
-              console.log(topics);
-                response.writeHead(200);
-                response.end('success');
+          db.query(`SELECT * FROM topic`, function (error, topics) {
+              var title = 'Welcome';
+              var description = 'Hello, Node.js';
+              var list = template.list(topics); // lib/template.js의 list
+              var html = template.HTML(title, list, // lib/template.js의 html
+                  `<h2>${title}</h2>${description}`,
+                  `<a href="/create">create</a>`
+              );
+              response.writeHead(200);
+              response.end(html);
           });
       } else {
         fs.readdir('./data', function(error, filelist){
