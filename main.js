@@ -53,19 +53,13 @@ var app = http.createServer(function(request,response){
     } else if(pathname === '/create'){
         db.query(`SELECT * FROM topic`, function (error, topics) {
             db.query(`SELECT * FROM author`, function (error2, authors) {
-                var tag = '';
-                var i =0;
-                while (i<authors.length){
-                    tag += `<option value="${authors[i].id}">${authors[i].name}</option>`;
-                    i++;
-                }
                 var title = 'Create';
                 var list = template.list(topics);
                 var html = template.HTML(title, list,
                     `<form action="/create_process" method="post">
             <p><input type="text" name="title" placeholder="title"></p>
             <p><textarea name="description" placeholder="description"></textarea></p>
-            <p><select name="author">${tag}</select></p>
+            <p>${template.authorSelect(authors)}</p>
             <p><input type="submit"></p></form>`,
                     `<a href="/create">create</a>`
                 );
@@ -80,7 +74,7 @@ var app = http.createServer(function(request,response){
       });
       request.on('end', function(){
           var post = qs.parse(body);
-          db.query(`INSERT INTO topic (title, description, created, author_id) VALUES (?, ?, NOW(), ?)`, [post.title, post.description, 1], function (error, result){
+          db.query(`INSERT INTO topic (title, description, created, author_id) VALUES (?, ?, NOW(), ?)`, [post.title, post.description, post.author], function (error, result){ // 저자로 받을 수 있게 수정
               if (error){
                   throw (error);
               }
