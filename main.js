@@ -1,6 +1,6 @@
 var http = require('http');
 var url = require('url');
-var topic = require('./lib/topic.js');
+var topic = require('./lib/topic'); //.js < 빼도 작동
 
 var app = http.createServer(function(request,response){
     var _url = request.url;
