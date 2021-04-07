@@ -5,7 +5,7 @@ var qs = require('querystring');
 var template = require('./lib/template.js');
 var path = require('path');
 var sanitizeHtml = require('sanitize-html');
-var db = require('./lib/db.js'); //db 내용에 정보가 있기 때문에 파일을 분리하고 모듈을 import한 것
+var db = require('./lib/db.js');
 
 var app = http.createServer(function(request,response){
     var _url = request.url;
@@ -16,28 +16,29 @@ var app = http.createServer(function(request,response){
           db.query(`SELECT * FROM topic`, function (error, topics) {
               var title = 'Welcome';
               var description = 'Hello, Node.js';
-              var list = template.list(topics); // lib/template.js의 list
-              var html = template.HTML(title, list, // lib/template.js의 html
+              var list = template.list(topics);
+              var html = template.HTML(title, list,
                   `<h2>${title}</h2>${description}`,
                   `<a href="/create">create</a>`
               );
               response.writeHead(200);
               response.end(html);
           });
-      } else { //상세보기
+      } else {
           db.query(`SELECT * FROM topic`, function (error, topics) {
               if (error){
                   throw error;
-              } //문제가 있다면 행위를 던져버려라(중단) 없다면 response 함
-              db.query(`SELECT * FROM topic WHERE id = ?`, [queryData.id], function (error2, topic) { //queryData.id의 값이 ?를 통해 치환되어 자동으로 들어감. 이는 공격 의도가 있는 코드를 세탁해주는 일을 해준다. [이렇게 사용하기!]
+              }
+              db.query(`SELECT * FROM topic LEFT JOIN author ON topic.author_id=author.id WHERE topic.id = ?`, [queryData.id], function (error2, topic) { //join을 이용해 두 테이블을 붙여줌
                   if (error2){
                       throw error2;
                   }
+                  console.log(topic);
                   var title = topic[0].title;
                   var description = topic[0].description;
-                  var list = template.list(topics); // lib/template.js의 list
-                  var html = template.HTML(title, list, // lib/template.js의 html
-                      `<h2>${title}</h2>${description}`,
+                  var list = template.list(topics);
+                  var html = template.HTML(title, list,
+                      `<h2>${title}</h2>${description} <p>by ${topic[0].name}</p>`, //누가 썼는지 본문 추가. p태그로 문단 띄움
                       ` <a href="/create">create</a>
                 <a href="/update?id=${queryData.id}">update</a>
                 <form action="delete_process" method="post">
@@ -53,8 +54,8 @@ var app = http.createServer(function(request,response){
     } else if(pathname === '/create'){
         db.query(`SELECT * FROM topic`, function (error, topics) {
             var title = 'Create';
-            var list = template.list(topics); // lib/template.js의 list
-            var html = template.HTML(title, list, // lib/template.js의 html
+            var list = template.list(topics);
+            var html = template.HTML(title, list,
                 `<form action="/create_process" method="post">
             <p><input type="text" name="title" placeholder="title"></p>
             <p>
@@ -80,7 +81,7 @@ var app = http.createServer(function(request,response){
               if (error){
                   throw (error);
               }
-              response.writeHead(302, {Location: `/?id=${result.insertId}`}); //삽입된 행의 id값을 가져오기
+              response.writeHead(302, {Location: `/?id=${result.insertId}`});
               response.end();
           })
       });
@@ -89,7 +90,7 @@ var app = http.createServer(function(request,response){
             if (error){
                 throw error;
             }
-            db.query(`SELECT * FROM topic WHERE id = ?`, [queryData.id], function (error2, topic) { //queryData.id의 값이 ?를 통해 치환되어 자동으로 들어감. 이는 공격 의도가 있는 코드를 세탁해주는 일을 해준다. [이렇게 사용하기!]
+            db.query(`SELECT * FROM topic WHERE id = ?`, [queryData.id], function (error2, topic) {
                 if (error2){
                     throw error2;
                 }
@@ -140,7 +141,7 @@ var app = http.createServer(function(request,response){
               }
               response.writeHead(302, {Location: `/`});
               response.end();
-          }) //5번 항목인 MongoDB 삭제 = 결과 성공
+          })
       });
     } else {
       response.writeHead(404);
