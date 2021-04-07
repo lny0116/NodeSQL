@@ -53,17 +53,19 @@ var app = http.createServer(function(request,response){
     } else if(pathname === '/create'){
         db.query(`SELECT * FROM topic`, function (error, topics) {
             db.query(`SELECT * FROM author`, function (error2, authors) {
-                console.log(authors);
+                var tag = '';
+                var i =0;
+                while (i<authors.length){
+                    tag += `<option value="${authors[i].id}">${authors[i].name}</option>`;
+                    i++;
+                }
                 var title = 'Create';
                 var list = template.list(topics);
                 var html = template.HTML(title, list,
                     `<form action="/create_process" method="post">
             <p><input type="text" name="title" placeholder="title"></p>
             <p><textarea name="description" placeholder="description"></textarea></p>
-            <p><select name="author">
-            <option value="1">egoing</option>
-            <option value="2">duru</option>
-            <option value="3">taeho</option></select></p>
+            <p><select name="author">${tag}</select></p>
             <p><input type="submit"></p></form>`,
                     `<a href="/create">create</a>`
                 );
