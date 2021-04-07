@@ -29,16 +29,15 @@ var app = http.createServer(function(request,response){
               if (error){
                   throw error;
               }
-              db.query(`SELECT * FROM topic LEFT JOIN author ON topic.author_id=author.id WHERE topic.id = ?`, [queryData.id], function (error2, topic) { //join을 이용해 두 테이블을 붙여줌
+              db.query(`SELECT * FROM topic LEFT JOIN author ON topic.author_id=author.id WHERE topic.id = ?`, [queryData.id], function (error2, topic) {
                   if (error2){
                       throw error2;
                   }
-                  console.log(topic);
                   var title = topic[0].title;
                   var description = topic[0].description;
                   var list = template.list(topics);
                   var html = template.HTML(title, list,
-                      `<h2>${title}</h2>${description} <p>by ${topic[0].name}</p>`, //누가 썼는지 본문 추가. p태그로 문단 띄움
+                      `<h2>${title}</h2>${description} <p>by ${topic[0].name}</p>`,
                       ` <a href="/create">create</a>
                 <a href="/update?id=${queryData.id}">update</a>
                 <form action="delete_process" method="post">
@@ -53,22 +52,24 @@ var app = http.createServer(function(request,response){
       }
     } else if(pathname === '/create'){
         db.query(`SELECT * FROM topic`, function (error, topics) {
-            var title = 'Create';
-            var list = template.list(topics);
-            var html = template.HTML(title, list,
-                `<form action="/create_process" method="post">
+            db.query(`SELECT * FROM author`, function (error2, authors) {
+                console.log(authors);
+                var title = 'Create';
+                var list = template.list(topics);
+                var html = template.HTML(title, list,
+                    `<form action="/create_process" method="post">
             <p><input type="text" name="title" placeholder="title"></p>
-            <p>
-              <textarea name="description" placeholder="description"></textarea>
-            </p>
-            <p>
-              <input type="submit">
-            </p>
-          </form>`,
-                `<a href="/create">create</a>`
-            );
-            response.writeHead(200);
-            response.end(html);
+            <p><textarea name="description" placeholder="description"></textarea></p>
+            <p><select name="author">
+            <option value="1">egoing</option>
+            <option value="2">duru</option>
+            <option value="3">taeho</option></select></p>
+            <p><input type="submit"></p></form>`,
+                    `<a href="/create">create</a>`
+                );
+                response.writeHead(200);
+                response.end(html);
+            })
         });
     } else if(pathname === '/create_process'){
       var body = '';
